@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "SkillBridge",
+    "slug": "skillbridge",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": { "package": "com.skillbridge.app" },
+    "splash": {
+      "backgroundColor": "#F7F5FF"
+    }
+  }
+}
