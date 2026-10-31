@@ -18,6 +18,9 @@
       "EXPO_PUBLIC_API_URL": "http://10.0.2.2:4000",
       "EXPO_PUBLIC_SUPABASE_URL": "https://skillbridge-demo.supabase.co",
       "EXPO_PUBLIC_SUPABASE_ANON_KEY": "dummy_anon_token_safe_fallback"
-    }
+    },
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }
