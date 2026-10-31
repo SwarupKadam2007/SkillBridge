@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Text, View, ScrollView, TextInput, Pressable } from 'react-native';
+import { Alert, Text, View, ScrollView, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { api } from '../lib/api';
+import { api, getActiveApiUrl, setCustomApiUrl, checkServerHealth } from '../lib/api';
 import PrimaryButton from '../components/PrimaryButton';
 import RatingStars from '../components/RatingStars';
 import { theme } from '../theme';
@@ -17,7 +17,12 @@ export default function ProfileScreen() {
   const [gradYear, setGradYear] = useState(profile?.graduation_year ? String(profile.graduation_year) : '');
   const [reputationData, setReputationData] = useState(null);
 
-  const userEmail = session?.user?.email || '';
+  // Server settings state
+  const [showServerConfig, setShowServerConfig] = useState(false);
+  const [serverUrlInput, setServerUrlInput] = useState(getActiveApiUrl());
+  const [serverStatus, setServerStatus] = useState(null); // 'online', 'offline', 'testing'
+
+  const userEmail = profile?.email || session?.user?.email || '';
   const collegeName = profile?.colleges?.name || 'Verified Campus';
 
   useEffect(() => {
@@ -27,6 +32,19 @@ export default function ProfileScreen() {
         .catch(() => {});
     }
   }, [profile?.id]);
+
+  async function handleTestServer() {
+    setServerStatus('testing');
+    const isUp = await checkServerHealth(serverUrlInput);
+    setServerStatus(isUp ? 'online' : 'offline');
+  }
+
+  async function handleSaveServerUrl() {
+    await setCustomApiUrl(serverUrlInput);
+    Alert.alert('Saved', `API endpoint set to: ${serverUrlInput || 'Default'}`);
+    setShowServerConfig(false);
+    handleTestServer();
+  }
 
   async function handleSave() {
     setBusy(true);
@@ -150,6 +168,64 @@ export default function ProfileScreen() {
                 onPress={() => setEditing(false)}
                 style={{ paddingHorizontal: 16, justifyContent: 'center', alignItems: 'center', borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border }}>
                 <Text style={{ color: theme.colors.muted, fontWeight: '700' }}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* Backend & Network Status Card */}
+      <View style={{ backgroundColor: '#fff', borderRadius: 20, padding: 18, marginTop: 16, borderWidth: 1, borderColor: theme.colors.border }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ fontSize: 18, marginRight: 8 }}>🌐</Text>
+            <View>
+              <Text style={{ fontSize: 15, fontWeight: '800', color: theme.colors.text }}>Backend Connection</Text>
+              <Text style={{ fontSize: 12, color: theme.colors.muted }}>
+                {serverStatus === 'online'
+                  ? '🟢 Live Server Connected'
+                  : serverStatus === 'testing'
+                  ? '⏳ Testing connection...'
+                  : '🟡 Demo & Campus Offline Mode'}
+              </Text>
+            </View>
+          </View>
+          <Pressable
+            onPress={() => setShowServerConfig(!showServerConfig)}
+            style={{ backgroundColor: theme.colors.lavender, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 }}>
+            <Text style={{ color: theme.colors.primaryDark, fontWeight: '800', fontSize: 12 }}>
+              {showServerConfig ? 'Close' : 'Configure'}
+            </Text>
+          </Pressable>
+        </View>
+
+        {showServerConfig && (
+          <View style={{ marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: theme.colors.muted, marginBottom: 4 }}>
+              API Base URL (e.g. https://your-server.onrender.com or http://192.168.x.x:4000)
+            </Text>
+            <TextInput
+              value={serverUrlInput}
+              onChangeText={setServerUrlInput}
+              autoCapitalize="none"
+              placeholder="http://10.0.2.2:4000"
+              placeholderTextColor={theme.colors.muted}
+              style={[inputStyle, { marginBottom: 10 }]}
+            />
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <Pressable
+                onPress={handleTestServer}
+                style={{ flex: 1, backgroundColor: '#FAF9FE', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center' }}>
+                {serverStatus === 'testing' ? (
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                ) : (
+                  <Text style={{ color: theme.colors.primaryDark, fontWeight: '800', fontSize: 13 }}>Test Health</Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={handleSaveServerUrl}
+                style={{ flex: 1, backgroundColor: theme.colors.primary, padding: 12, borderRadius: 12, alignItems: 'center' }}>
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Save URL</Text>
               </Pressable>
             </View>
           </View>

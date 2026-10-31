@@ -5,9 +5,19 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "android": { "package": "com.skillbridge.app" },
+    "android": {
+      "package": "com.skillbridge.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#7C3AED"
+      }
+    },
     "splash": {
       "backgroundColor": "#F7F5FF"
+    },
+    "extra": {
+      "EXPO_PUBLIC_API_URL": "http://10.0.2.2:4000",
+      "EXPO_PUBLIC_SUPABASE_URL": "https://skillbridge-demo.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "dummy_anon_token_safe_fallback"
     }
   }
 }
